@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="../stylesheets/style.css">
+</head>
+<body>
+
+  <div id="main">
+    <div id="overlay">
+      <input type="text" placeholder="Enter name">
+      <button>enter the chat</button>
+    </div>
+    <div class="nav">
+      <div class="one">
+        <i class="ri-arrow-left-s-line"></i>
+        <h3>menu</h3>
+      </div>
+      <i class="ri-checkbox-blank-circle-line"></i>
+      <i class="ri-search-line"></i>
+    </div>
+    <div class="box">
+      <div class="box1">
+        <div class="user">
+          <div class="pic">
+            <img src="https://images.pexels.com/photos/2238409/pexels-photo-2238409.jpeg?cs=srgb&dl=pexels-sam-cardoso-2238409.jpg&fm=jpg" alt="">
+          </div>
+          <h2>jenny adelgate</h2>
+          <p>kpmg</p>
+        </div>
+        <div class="detail">
+          <div class="det1 ico">
+            <i class="ri-pulse-fill"></i>
+            <h3>activity</h3>
+          </div>
+          <div class="det1 ico2">
+            <i class="ri-user-fill"></i>
+            <h3>profile</h3>
+          </div>
+          <div class="det1 ico3">
+            <i class="ri-message-line"></i>
+            <h3>message</h3>
+          </div>
+          <div class="det1 ico4">
+            <i class="ri-settings-4-line"></i>
+            <h3>setting</h3>
+          </div>
+        </div>
+      </div>
+      <div class="box2">
+        <div class="search">
+          <input type="text" placeholder="search content">
+        </div>
+        <div class="usersno">
+          </div>
+        </div>
+        <div class="box3">
+          <div class="top">
+            <h3>Your conversation</h3>
+            <div class="online">online : <span class="onlineperson"></span></div>
+            <i class="ri-delete-bin-7-line"></i>
+          </div>
+          <div class="content">
+          </div>
+          <div class="type">
+            <button id="send">send</button>
+            <!-- <div class="ico"><i class="ri-send-plane-fill"></i></div> -->
+            <textarea></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.0/socket.io.min.js" integrity="sha512-pxLMWs4E33rW9tdIhovcCp2dCo9k4Q8eHw7CETjyjdXf4aX6wvsEBq+KdOJJRFALr6FxNoXx+jksgbE74TZjEw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    var username = 'default';
+    var socket = io();
+
+
+function message(){
+  var data = document.querySelector("textarea").value;
+  if(data.length>0){
+    socket.emit("msg",{username:username, msg:data,id:socket.id});
+      document.querySelector("textarea").value = '';
+  }
+}
+  document.querySelector("#send")
+    .addEventListener('click', function(dets){
+      message();
+    })
+
+
+    socket.on("reply", function(data){
+      if(data.id === socket.id){
+       document.querySelector('.content').innerHTML +=
+        `<div class="msg">
+        <small>${data.username}<small>
+            <h3>${data.msg}</h3>
+          </div>`
+        }
+        else{
+          document.querySelector('.content').innerHTML +=
+        `<div class="msg other">
+        <small>${data.username}<small>
+            <h3>${data.msg}</h3>
+          </div>`
+        }
+        var objDiv = document.querySelector(".content");
+      objDiv.scrollTop = objDiv.scrollHeight;
+    })
+
+    socket.on("disconnected", function(b){
+      document.querySelector(".onlineperson").textContent = b.length;
+
+    })
+
+    socket.on("allusers", function(dets){
+      document.querySelector(".onlineperson").textContent = dets.length;
+
+    })
+      const textarea = document.querySelector('textarea')
+      .addEventListener('keyup', function(key){
+        if(key.keyCode === 13){
+            message();
+
+          }
+
+      })
+
+
+      document.querySelector("#overlay button")
+    .addEventListener("click", function(){
+      if(document.querySelector("input").value.length > 0){
+        username = document.querySelector("input").value;
+        document.querySelector("#overlay").style.display = "none";
+        socket.emit("allname",username);
+
+      }
+        else{
+          alert(" Plz enter your name");
+        }
+      
+    });
+
+    socket.on("allusers", function(u){
+      var clutter = '';
+
+      u.forEach(function(allusers){
+
+      clutter += `<div class="usersonline">
+            <h4>${allusers}</h4>
+            <div class="onlinelogo"><h5>online</h5>
+            </div>
+
+          </div>`
+
+      document.querySelector('.usersno').innerHTML= clutter;
+    })
+    })
+
+ 
+
+
+
+
+  </script>
+</body>
+</html>
